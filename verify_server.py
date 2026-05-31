@@ -179,6 +179,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({"ok": True})
         elif path == "/api/check/all":
             self.send_json(check_all())
+        elif path == "/api/check/terminal":
+            # 서버가 실행 중 = 터미널 사용 중 = 확인 완료
+            self.send_json({"ok": True, "name": "terminal", "version": "터미널 사용 확인됨"})
         elif path == "/api/check/korean":
             self.send_json(check_ext(EXT_S2))
         elif path == "/api/check/extensions":
