@@ -348,6 +348,8 @@
       <span class="label">단축키 기억</span>
       macOS 사용자는 <kbd>Ctrl</kbd> 대신 <kbd>Cmd</kbd>를 사용합니다. (예: <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>)
     </div>
+    <button class="verify-btn" data-step="s2" data-check="korean">🔍 한국어팩 설치 자동 확인</button>
+    <div class="verify-result"></div>
   </div>
 </section>
 
@@ -383,6 +385,8 @@
       <span class="label">🔥 Python / Node 학습자라면 추가로</span>
       <b>Python</b>(Microsoft) 확장과 <b>ESLint</b>도 함께 설치해 두면 뒤에 나올 가상환경·Node 실습이 훨씬 매끄러워집니다. 그리고 AI 페어 프로그래밍을 위한 <b>Claude Code</b>는 STEP 09에서 따로 깊게 다룹니다.
     </div>
+    <button class="verify-btn" data-step="s3" data-check="extensions">🔍 필수 확장 4개 설치 자동 확인</button>
+    <div class="verify-result"></div>
   </div>
 </section>
 
@@ -408,6 +412,8 @@
   <span class="st">"editor.defaultFormatter"</span>: <span class="st">"esbenp.prettier-vscode"</span>
 }</code></pre>
     </div>
+    <button class="verify-btn" data-step="s4" data-check="vssettings">🔍 핵심 설정 자동 확인</button>
+    <div class="verify-result"></div>
   </div>
 </section>
 
@@ -877,7 +883,7 @@
   }
 
   // steps verifiable by system; others are locked (no manual check)
-  const VERIFIABLE=new Set(['s1','s5','s6','s8','s9','s10']);
+  const VERIFIABLE=new Set(['s1','s2','s3','s4','s5','s6','s8','s9','s10']);
 
   // build scoreboard checklist (read-only — only gAward() can set done)
   const sbList=document.getElementById('sb-list');
@@ -910,6 +916,24 @@
   });
 
   // ===== VERIFY SYSTEM =====
+  function fmtResult(d,key,ok){
+    if(!d) return '❌ 서버 오류';
+    // extensions response: {ok, extensions:{name:{id,ok}}}
+    if(d.extensions){
+      return Object.entries(d.extensions)
+        .map(([n,v])=>(v.ok?'✅ ':'❌ ')+v.id).join('<br>');
+    }
+    // vssettings response
+    if('formatOnSave' in d){
+      const lines=[];
+      lines.push((d.formatOnSave?'✅':'❌')+' Format On Save: '+(d.formatOnSave?'켜짐':'꺼짐'));
+      lines.push((d.autoSave!=='off'?'✅':'❌')+' Auto Save: '+(d.autoSave||'off'));
+      return lines.join('<br>');
+    }
+    // korean / plain
+    if(ok) return '✅ '+(d.name||key)+': '+(d.version||'설치됨');
+    return '❌ '+(d.error||'설치를 확인하세요');
+  }
   const V='http://localhost:3001';
   let vOnline=false;
 
@@ -951,12 +975,12 @@
       btn.disabled=false;
       if(d&&d.ok){
         btn.textContent='✅ 확인 완료';btn.className='verify-btn ok';
-        resEl.textContent='✅ '+(d.name||checkKey)+': '+(d.version||'설치됨');
+        resEl.innerHTML=fmtResult(d,checkKey,true);
         resEl.className='verify-result show ok';
         gAward(stepId);
       }else{
         btn.textContent='🔍 다시 확인';btn.className='verify-btn fail';
-        resEl.textContent='❌ '+(d?(d.error||'설치를 확인하세요'):'오류');
+        resEl.innerHTML=fmtResult(d,checkKey,false);
         resEl.className='verify-result show fail';
       }
     });

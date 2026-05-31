@@ -59,6 +59,78 @@ def check_one(key):
 def check_all():
     return {k: check_one(k) for k in CMDS}
 
+# ── VS Code 확장 검증 ─────────────────────────────────────────
+# publisher.name 형식의 확장 ID 목록
+EXT_S2 = {"korean": "ms-ceintl.vscode-language-pack-ko"}
+EXT_S3 = {
+    "prettier":  "esbenp.prettier-vscode",
+    "icons":     "pkief.material-icon-theme",
+    "liveserver":"ritwickdey.liveserver",
+    "gitlens":   "eamodio.gitlens",
+}
+
+def check_ext(required: dict):
+    """required = {name: "publisher.ext-id"}"""
+    ok, out = run("code --list-extensions")
+    if not ok:
+        return {"ok": False, "error": "code 명령 실패 — PATH에 code가 없거나 VS Code가 설치되지 않음"}
+    installed = {line.strip().lower() for line in out.splitlines() if line.strip()}
+    results = {}
+    all_ok = True
+    for name, ext_id in required.items():
+        found = ext_id.lower() in installed
+        results[name] = {"id": ext_id, "ok": found}
+        if not found:
+            all_ok = False
+    return {"ok": all_ok, "extensions": results}
+
+# ── VS Code 사용자 설정 검증 ──────────────────────────────────
+def _strip_jsonc(text):
+    """Remove // line-comments from JSONC, skipping // inside strings."""
+    out, i, in_str = [], 0, False
+    while i < len(text):
+        c = text[i]
+        if in_str:
+            if c == "\\" and i + 1 < len(text):
+                out.append(c); out.append(text[i+1]); i += 2; continue
+            if c == '"':
+                in_str = False
+            out.append(c)
+        else:
+            if c == '"':
+                in_str = True; out.append(c)
+            elif c == "/" and i + 1 < len(text) and text[i+1] == "/":
+                while i < len(text) and text[i] != "\n":
+                    i += 1
+                continue
+            else:
+                out.append(c)
+        i += 1
+    return "".join(out)
+
+def check_vssettings():
+    import pathlib
+    if IS_WIN:
+        base = pathlib.Path(os.environ.get("APPDATA", ""))
+    elif sys.platform == "darwin":
+        base = pathlib.Path.home() / "Library" / "Application Support"
+    else:
+        base = pathlib.Path.home() / ".config"
+    path = base / "Code" / "User" / "settings.json"
+
+    if not path.exists():
+        return {"ok": False, "error": f"settings.json 없음: {path}"}
+    try:
+        content = _strip_jsonc(path.read_text(encoding="utf-8"))
+        settings = json.loads(content)
+        fmt  = bool(settings.get("editor.formatOnSave", False))
+        auto = settings.get("files.autoSave", "off")
+        ok = fmt or auto != "off"
+        return {"ok": ok, "formatOnSave": fmt, "autoSave": auto,
+                "error": "" if ok else "formatOnSave 또는 autoSave 설정이 필요합니다"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 # ── HTTP Handler ─────────────────────────────────────────────
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
@@ -107,6 +179,12 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({"ok": True})
         elif path == "/api/check/all":
             self.send_json(check_all())
+        elif path == "/api/check/korean":
+            self.send_json(check_ext(EXT_S2))
+        elif path == "/api/check/extensions":
+            self.send_json(check_ext(EXT_S3))
+        elif path == "/api/check/vssettings":
+            self.send_json(check_vssettings())
         elif path.startswith("/api/check/"):
             key = path[len("/api/check/"):]
             self.send_json(check_one(key))
