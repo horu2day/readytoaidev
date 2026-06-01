@@ -59,11 +59,20 @@ def check_one(key):
     if key not in CMDS:
         return {"ok": False, "error": "unknown check"}
     ok, out = run(CMDS[key])
+    # Windows: npm global bin may not be in inherited PATH (exe started before install)
+    if not ok and key == "claude" and IS_WIN:
+        claude_cmd = os.path.join(os.environ.get("APPDATA", ""), "npm", "claude.cmd")
+        if os.path.exists(claude_cmd):
+            ok, out = run(f'"{claude_cmd}" --version')
     ver = out.split("\n")[0].strip() if ok else ""
     return {"ok": ok, "name": key, "version": ver, "error": "" if ok else out}
 
 def check_all():
-    return {k: check_one(k) for k in CMDS}
+    result = {k: check_one(k) for k in CMDS}
+    result['korean']     = check_ext(EXT_S2)
+    result['extensions'] = check_ext(EXT_S3)
+    result['vssettings'] = check_vssettings()
+    return result
 
 # ── VS Code 확장 검증 ─────────────────────────────────────────
 # publisher.name 형식의 확장 ID 목록
@@ -92,7 +101,8 @@ def check_ext(required: dict):
 
 # ── VS Code 사용자 설정 검증 ──────────────────────────────────
 def _strip_jsonc(text):
-    """Remove // line-comments from JSONC, skipping // inside strings."""
+    """Remove // and /* */ comments and trailing commas from JSONC."""
+    import re
     out, i, in_str = [], 0, False
     while i < len(text):
         c = text[i]
@@ -109,10 +119,19 @@ def _strip_jsonc(text):
                 while i < len(text) and text[i] != "\n":
                     i += 1
                 continue
+            elif c == "/" and i + 1 < len(text) and text[i+1] == "*":
+                i += 2
+                while i + 1 < len(text) and not (text[i] == "*" and text[i+1] == "/"):
+                    i += 1
+                i += 2
+                continue
             else:
                 out.append(c)
         i += 1
-    return "".join(out)
+    # remove trailing commas before } or ]
+    result = "".join(out)
+    result = re.sub(r',(\s*[}\]])', r'\1', result)
+    return result
 
 def check_vssettings():
     import pathlib
