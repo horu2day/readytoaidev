@@ -28,6 +28,12 @@ def base_dir():
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.abspath(__file__))
 
+def html_path():
+    # --add-data 번들 시 sys._MEIPASS, 개발 환경은 base_dir
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, "vscode-lecture.html")
+    return os.path.join(base_dir(), "vscode-lecture.html")
+
 # ── 시스템 명령 실행 ─────────────────────────────────────────
 def run(cmd):
     try:
@@ -166,12 +172,12 @@ class Handler(BaseHTTPRequestHandler):
 
         # ── 강의 HTML 서빙 ────────────────────────────────────
         if path in ("/", "/vscode-lecture.html"):
-            html_path = os.path.join(base_dir(), "vscode-lecture.html")
-            if os.path.exists(html_path):
-                with open(html_path, "rb") as f:
+            p = html_path()
+            if os.path.exists(p):
+                with open(p, "rb") as f:
                     self.send_html(f.read())
             else:
-                self.send_json({"error": "vscode-lecture.html not found in same folder"}, 404)
+                self.send_json({"error": "vscode-lecture.html not found"}, 404)
             return
 
         # ── API ───────────────────────────────────────────────
