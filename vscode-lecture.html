@@ -253,6 +253,23 @@
   @media(max-width:620px){
     #scoreboard{width:188px;right:8px;top:52px}
     #sb-num{font-size:2rem}}
+
+  /* ===== OS Switcher & Platform-Specific Styles ===== */
+  .os-switcher{display:inline-flex;background:var(--bg-soft);border:1px solid var(--line);border-radius:20px;padding:2px;gap:2px}
+  .os-btn{background:transparent;border:none;color:var(--ink-dim);font-family:var(--mono);font-size:.72rem;padding:.26rem .75rem;border-radius:16px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:.3rem}
+  .os-btn:hover{color:var(--ink)}
+  .os-btn.active{background:var(--accent-2);color:var(--bg);font-weight:700;box-shadow:0 0 10px rgba(77,184,255,.3)}
+  .os-pill{display:inline-flex;align-items:center;gap:.4rem;background:var(--bg-card);border:1px solid var(--line);border-radius:20px;padding:.3rem .9rem;font-family:var(--mono);font-size:.74rem;color:var(--ink-dim);margin-top:1.4rem}
+  .os-pill b{color:var(--accent-2)}
+  .os-hl-mac, .os-hl-win{transition:.3s;border-radius:4px}
+  body.os-mac .os-hl-mac{background:rgba(77,184,255,.14);border-left:3px solid var(--accent-2);padding-left:.5rem;display:inline-block;width:100%}
+  body.os-mac .os-hl-win{opacity:.45}
+  body:not(.os-mac) .os-hl-win{background:rgba(255,208,47,.14);border-left:3px solid var(--accent);padding-left:.5rem;display:inline-block;width:100%}
+  body:not(.os-mac) .os-hl-mac{opacity:.45}
+  body.os-mac .os-tip-win{opacity:.5}
+  body.os-mac .os-tip-mac{border-left-color:var(--accent-2);box-shadow:0 0 15px rgba(77,184,255,.1)}
+  body:not(.os-mac) .os-tip-mac{opacity:.5}
+  body:not(.os-mac) .os-tip-win{border-left-color:var(--green)}
 </style>
 </head>
 <body>
@@ -280,6 +297,10 @@
 
 <nav>
   <div class="brand">&lt;<b>devsetup</b>/&gt;</div>
+  <div class="os-switcher" role="group" aria-label="운영체제 선택">
+    <button class="os-btn active" id="btn-os-win" data-os="win" title="Windows 가이드 모드">🪟 Windows</button>
+    <button class="os-btn" id="btn-os-mac" data-os="mac" title="macOS 가이드 모드">🍎 macOS</button>
+  </div>
   <div class="navlinks">
     <a href="#s1">설치</a>
     <a href="#s2">한국어팩</a>
@@ -305,6 +326,9 @@
     <span class="tag">Claude_Code</span>
     <span class="tag">200점_도전</span>
   </div>
+  <div class="os-pill">
+    <span>운영체제 모드:</span> <b id="os-current-label">🪟 Windows</b> <span style="opacity:.6">(상단에서 전환 가능)</span>
+  </div>
   <div class="scroll-hint">↓ 1단계부터 — 점수를 모아 마스터로!</div>
 </header>
 
@@ -315,13 +339,17 @@
     <h2>📥 VS Code 다운로드 & 설치</h2>
     <p>Visual Studio Code는 전 세계 개발자가 가장 많이 쓰는 가볍고 강력한 코드 편집기입니다. 본인 운영체제에 맞는 버전을 <a class="inline" href="https://code.visualstudio.com/" target="_blank" rel="noopener">공식 홈페이지</a>에서 받아 설치하세요.</p>
     <ul class="check">
-      <li><b>Windows</b> · <kbd>.exe</kbd> 설치 파일 실행</li>
-      <li><b>macOS</b> · <kbd>.zip</kbd> 다운로드 후 Applications 폴더로 이동</li>
+      <li class="os-hl-win"><b>Windows</b> · <kbd>.exe</kbd> 설치 파일 실행</li>
+      <li class="os-hl-mac"><b>macOS</b> · <kbd>.zip</kbd> 다운로드 후 Applications 폴더로 이동</li>
       <li><b>Linux</b> · <kbd>.deb</kbd> / <kbd>.rpm</kbd> 또는 Snap</li>
     </ul>
-    <div class="box tip">
+    <div class="box tip os-tip-win">
       <span class="label">💡 Windows 설치 Tip</span>
       설치 중 <b>기타 옵션</b> 화면에서 <b>'디렉터리의 바로 가기 메뉴에 "Code(으)로 열기" 작업 추가'</b>를 체크하세요. 폴더를 마우스 우클릭만 하면 바로 VS Code로 열 수 있어 정말 편리합니다.
+    </div>
+    <div class="box tip os-tip-mac">
+      <span class="label">💡 macOS 설치 Tip</span>
+      다운로드된 <kbd>Visual Studio Code.app</kbd>을 <b>Applications(응용 프로그램)</b> 폴더로 이동하세요. 설치 후 터미널에서 <code>code</code> 명령을 쓰려면 VS Code에서 <kbd class="key-mod">Cmd ⌘</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → <b>Shell Command: Install 'code' command in PATH</b>를 한 번 실행해 두면 편리합니다.
     </div>
     <div class="box note">
       <span class="label">✅ 따라 하기</span>
@@ -339,14 +367,14 @@
     <h2>🌐 한국어 팩 설치 <span style="font-size:.5em;color:var(--ink-dim)">(선택)</span></h2>
     <p>메뉴가 영어라 불편하다면 한국어 언어 팩을 먼저 깔아 보세요.</p>
     <ul class="check">
-      <li>왼쪽 사이드바의 블록 모양 아이콘 <b>(Extensions)</b> 클릭 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd></li>
+      <li>왼쪽 사이드바의 블록 모양 아이콘 <b>(Extensions)</b> 클릭 · <kbd class="key-mod">Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd></li>
       <li>검색창에 <b>Korean</b> 입력</li>
       <li><b>Korean Language Pack for Visual Studio Code</b> 선택 후 <b>Install</b></li>
       <li>오른쪽 아래 알림창에서 <b>Restart</b> 클릭</li>
     </ul>
     <div class="box note">
-      <span class="label">단축키 기억</span>
-      macOS 사용자는 <kbd>Ctrl</kbd> 대신 <kbd>Cmd</kbd>를 사용합니다. (예: <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>)
+      <span class="label">단축키 안내</span>
+      상단 토글로 macOS를 선택하면 모든 안내가 <kbd>Cmd ⌘</kbd> 기준으로 자동 전환됩니다. (예: <kbd class="key-mod">Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>)
     </div>
     <button class="verify-btn" data-step="s2" data-check="korean">🔍 한국어팩 설치 자동 확인</button>
     <div class="verify-result"></div>
@@ -406,13 +434,13 @@
   <div class="reveal">
     <div class="step-no">STEP 04</div>
     <h2>⚙️ 개발이 편해지는 핵심 설정</h2>
-    <p>메뉴 <b>[파일] → [기본 설정] → [설정]</b> (<kbd>Ctrl</kbd>+<kbd>,</kbd>)에서 아래 키워드를 검색해 켜 두면 좋습니다.</p>
+    <p>설정 열기: <kbd class="key-mod">Ctrl</kbd>+<kbd>,</kbd> (메뉴: [파일] → [기본 설정] → [설정], macOS는 [Code] → [설정])에서 아래 키워드를 검색해 켜 두면 좋습니다.</p>
     <ul class="check">
-      <li><b>Format On Save</b> · 저장(<kbd>Ctrl</kbd>+<kbd>S</kbd>)할 때마다 Prettier가 코드를 자동 정렬</li>
+      <li><b>Format On Save</b> · 저장(<kbd class="key-mod">Ctrl</kbd>+<kbd>S</kbd>)할 때마다 Prettier가 코드를 자동 정렬</li>
       <li><b>Auto Save</b> · <kbd>afterDelay</kbd> 또는 <kbd>onFocusChange</kbd>로 설정하면 자동 저장</li>
       <li><b>Font Size</b> · 눈이 가장 편한 글꼴 크기로 조절</li>
     </ul>
-    <p>설정 파일을 직접 편집하고 싶다면 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → <b>Open User Settings (JSON)</b> 에 아래를 붙여넣으세요.</p>
+    <p>설정 파일을 직접 편집하고 싶다면 <kbd class="key-mod">Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → <b>Open User Settings (JSON)</b> 에 아래를 붙여넣으세요.</p>
     <div class="code">
       <div class="code-top"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">settings.json</span><button class="copy">복사</button></div>
 <pre><code><span class="cm">// 저장 시 자동 서식 + 자동 저장</span>
@@ -486,33 +514,38 @@ C:\Program Files\Git\cmd
     <div class="code">
       <div class="code-top"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">terminal</span><button class="copy">복사</button></div>
 <pre><code><span class="cm"># 'python -m venv [폴더이름]' — 관례상 폴더명은 .venv</span>
-<span class="pr">$</span> python -m venv .venv
-<span class="cm"># macOS / Linux: python3 -m venv .venv</span></code></pre>
+<span class="os-hl-win"><span class="pr">$</span> python -m venv .venv</span>
+<span class="os-hl-mac"><span class="cm"># macOS / Linux:</span>
+<span class="pr">$</span> python3 -m venv .venv</span></code></pre>
     </div>
 
     <h3>4) 가상환경 활성화 (Activate)</h3>
     <p>운영체제마다 명령이 다릅니다. 활성화되면 터미널 줄 앞에 <kbd>(.venv)</kbd>가 표시됩니다.</p>
     <div class="code">
       <div class="code-top"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">terminal</span><button class="copy">복사</button></div>
-<pre><code><span class="cm"># Windows (PowerShell)</span>
+<pre><code><span class="os-hl-win"><span class="cm"># Windows (PowerShell)</span>
 <span class="pr">$</span> .venv\Scripts\Activate.ps1
 
 <span class="cm"># Windows (cmd)</span>
-<span class="pr">$</span> .venv\Scripts\activate.bat
+<span class="pr">$</span> .venv\Scripts\activate.bat</span>
 
-<span class="cm"># macOS / Linux</span>
-<span class="pr">$</span> source .venv/bin/activate
+<span class="os-hl-mac"><span class="cm"># macOS / Linux</span>
+<span class="pr">$</span> source .venv/bin/activate</span>
 
 <span class="cm"># 활성화 성공 → 줄 앞에 (.venv) 표시됨</span>
 <span class="pr">(.venv) $</span></code></pre>
     </div>
-    <div class="box warn">
-      <span class="label">⚠️ PowerShell 실행 정책 오류</span>
+    <div class="box warn os-tip-win">
+      <span class="label">⚠️ Windows PowerShell 실행 정책 오류</span>
       Windows에서 <kbd>Activate.ps1</kbd> 실행 시 "스크립트를 실행할 수 없습니다" 오류가 나면, 관리자 PowerShell에서 아래를 한 번 실행하세요.
       <div class="code" style="margin-top:.8rem">
         <div class="code-top"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="code-lang">PowerShell (관리자)</span><button class="copy">복사</button></div>
 <pre><code><span class="pr">$</span> Set-ExecutionPolicy -Scope CurrentUser RemoteSigned</code></pre>
       </div>
+    </div>
+    <div class="box tip os-tip-mac">
+      <span class="label">💡 macOS 가상환경 실행 팁</span>
+      macOS 터미널(zsh)에서는 <code>source .venv/bin/activate</code> 한 줄이면 바로 가상환경이 켜집니다.
     </div>
 
     <h3>4) 패키지 설치 & 기록</h3>
@@ -529,7 +562,7 @@ C:\Program Files\Git\cmd
     </div>
     <div class="box tip">
       <span class="label">💡 VS Code 인터프리터 연결</span>
-      <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → <b>Python: Select Interpreter</b> → 방금 만든 <kbd>.venv</kbd>를 선택하면, 새 터미널이 자동으로 가상환경을 활성화해 줍니다.
+      <kbd class="key-mod">Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → <b>Python: Select Interpreter</b> → 방금 만든 <kbd>.venv</kbd>를 선택하면, 새 터미널이 자동으로 가상환경을 활성화해 줍니다.
     </div>
     <button class="verify-btn" data-step="s5" data-check="python">🔍 Python 설치 자동 확인</button>
     <div class="verify-result"></div>
@@ -630,7 +663,7 @@ C:\Program Files\Git\cmd
     </div>
     <div class="box warn">
       <span class="label">⚠️ macOS에서 code가 안 먹힌다면</span>
-      VS Code에서 <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → <b>Shell Command: Install 'code' command in PATH</b> 를 한 번 실행해 주세요.
+      VS Code에서 <kbd class="key-mod">Cmd ⌘</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> → <b>Shell Command: Install 'code' command in PATH</b> 를 한 번 실행해 주세요. (실행 후 터미널 재시작)
     </div>
 
     <h3>4) 알아두면 좋은 기본 이동 명령</h3>
@@ -693,7 +726,7 @@ C:\Program Files\Git\cmd
     </div>
     <div class="box note">
       <span class="label">🖱️ VS Code GUI로도 가능</span>
-      왼쪽 <b>Source Control</b> 패널(<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>)에서 메시지를 적고 <b>Commit</b> 버튼만 눌러도 똑같이 동작합니다.
+      왼쪽 <b>Source Control</b> 패널(<kbd class="key-mod">Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd>)에서 메시지를 적고 <b>Commit</b> 버튼만 눌러도 똑같이 동작합니다.
     </div>
 
     <h3>3) GitHub에 올리기 (원격 연결 & push)</h3>
@@ -773,7 +806,7 @@ C:\Program Files\Git\cmd
 
     <h3>1) 확장 설치</h3>
     <ul class="check">
-      <li>Extensions 패널 열기 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd></li>
+      <li>Extensions 패널 열기 · <kbd class="key-mod">Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd></li>
       <li>검색창에 <b>Claude Code</b> 입력</li>
       <li><b>반드시 게시자가 Anthropic</b>인 공식 확장을 선택 (비공식 모방 확장 주의!) → <b>Install</b></li>
       <li>설치되면 사이드바에 <b>Spark 아이콘(✨)</b>이 나타남</li>
@@ -983,16 +1016,37 @@ C:\Program Files\Git\cmd
     if(ok) return '✅ '+(d.name||key)+': '+(d.version||'설치됨');
     return '❌ '+(d.error||'설치를 확인하세요');
   }
-  const V='http://localhost:3001';
+  let V = window.location.protocol.startsWith('http') ? window.location.origin : 'http://localhost:3001';
   let vOnline=false;
 
   async function vPing(){
-    try{const r=await fetch(V+'/api/ping',{signal:AbortSignal.timeout(1800)});vOnline=r.ok;}
-    catch{vOnline=false;}
+    const checkUrls = (!window.location.protocol.startsWith('http')) 
+      ? Array.from(new Set([V, 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003']))
+      : [V];
+
+    let connected = false;
+    for(const u of checkUrls){
+      try{
+        const r=await fetch(u+'/api/ping',{signal:AbortSignal.timeout(1200)});
+        if(r.ok){
+          V = u;
+          connected = true;
+          try{
+            const d=await r.json();
+            if(d&&d.os&&!localStorage.getItem('user_os_manual')){
+              setOS(d.os,false);
+            }
+          }catch(e){}
+          break;
+        }
+      }catch(e){}
+    }
+    vOnline = connected;
+
     const dot=document.getElementById('sb-sdot');
     if(dot){
       dot.classList.toggle('live',vOnline);
-      dot.title=vOnline?'검증 서버 연결됨 ✅ — 버튼을 눌러 실제 설치를 확인하세요'
+      dot.title=vOnline?('검증 서버 연결됨 ('+V+') ✅ — 버튼을 눌러 실제 설치를 확인하세요')
         :'verify_server.py를 실행하면 자동 검증 활성화';
     }
     setTimeout(vPing,5000);
@@ -1008,10 +1062,51 @@ C:\Program Files\Git\cmd
   }
 
   function vNoServer(resEl){
+    const isMac = document.body.classList.contains('os-mac');
+    const runCmd = isMac ? 'python3 verify_server.py --mac' : 'python verify_server.py';
+    const altCmd = isMac ? '<br><span style="font-size:.62rem;color:var(--ink-dim)">(또는 ./run_mac.sh 실행)</span>' : '';
     resEl.innerHTML='⚠ <b>verify_server.py</b>를 먼저 실행하세요<br>'
-      +'<code style="font-size:.65rem">python verify_server.py</code>';
+      +'<code style="font-size:.65rem">'+runCmd+'</code>' + altCmd;
     resEl.className='verify-result show fail';
   }
+
+  // ===== OS Switcher Control =====
+  function setOS(os, save=true){
+    if(os !== 'mac' && os !== 'win') os = 'win';
+    document.body.classList.remove('os-win', 'os-mac');
+    document.body.classList.add('os-' + os);
+    document.querySelectorAll('.os-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.os === os);
+    });
+    const lbl = document.getElementById('os-current-label');
+    if(lbl) lbl.textContent = os === 'mac' ? '🍎 macOS' : '🪟 Windows';
+    
+    // 키보드 모디파이어 업데이트 (Ctrl ↔ Cmd ⌘)
+    document.querySelectorAll('.key-mod').forEach(el => {
+      el.textContent = (os === 'mac') ? 'Cmd ⌘' : 'Ctrl';
+    });
+
+    if(save){
+      localStorage.setItem('user_os', os);
+      localStorage.setItem('user_os_manual', '1');
+    }
+  }
+
+  document.querySelectorAll('.os-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setOS(btn.dataset.os, true);
+    });
+  });
+
+  (function initOS(){
+    const saved = localStorage.getItem('user_os');
+    if(saved){
+      setOS(saved, false);
+    } else {
+      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0 || navigator.userAgent.toUpperCase().indexOf('MAC') >= 0;
+      setOS(isMac ? 'mac' : 'win', false);
+    }
+  })();
 
   // ── 버튼 원본 텍스트 저장 (초기화 복원용) ──────────────────
   document.querySelectorAll('.verify-btn[data-check]').forEach(btn=>{

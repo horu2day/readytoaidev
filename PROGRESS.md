@@ -9,6 +9,15 @@
 
 ## 로그 (최신이 위)
 
+### 2026-09-12 — macOS 구동 옵션 및 호환성 처리
+- ✅ `verify_server.py`: CLI 인자 파서(`argparse`) 추가 (`--os`, `--mac`, `--win`, `--port`, `--no-browser`)
+- ✅ `verify_server.py`: macOS 환경 PATH 자동 확장(Homebrew, NVM, npm global) 및 VS Code CLI 위치 자동 탐색(앱 번들, Spotlight mdfind fallback) 추가로 Mac에서 `code` 미등록 상태에서도 검증 정상 동작
+- ✅ `verify_server.py`: 기본 포트 3001 점유 시 가용 포트(3002 등) 자동 순차 탐색 기능 추가
+- ✅ `run_mac.sh`: Mac 사용자를 위한 원클릭/간편 쉘 실행 스크립트 작성 (`chmod +x`)
+- ✅ `vscode-lecture.html`: 상단 OS 선택 토글 옵션(`🪟 Windows` / `🍎 macOS`) 추가, `localStorage` 저장 및 서버 OS 자동 동기화
+- ✅ `vscode-lecture.html`: Mac 모드 시 단축키(Cmd ⌘) 동적 전환, 가상환경 활성화 명령 탭 및 Mac 맞춤 팁 적용
+- ⏳ 다음: Node 프로젝트 초기화 및 테스트 자동화
+
 ### 2026-05-29 — 환경 셋업
 - ✅ 메모리 저장: `project-lecture-site`, `test-automation-plan`
 - ✅ 작성: `CLAUDE.md`(세션 시작 프로토콜 포함), `PLAN.md`, `PROGRESS.md`, `docs/considerations.md`
